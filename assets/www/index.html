@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<title>ExpoContactos</title>
+	
+    
+	<link href="css/bootstrap.min.css" rel="stylesheet" type="text/css">
+    <link href="css/bootstrap-responsive.min.css" rel="stylesheet" type="text/css">
+    <link href="css/jquery.mobile-1.3.0.css" rel="stylesheet" type="text/css">
+    <link href="css/estilos.css" rel="stylesheet" type="text/css">
+
+    <script type="text/javascript" charset="utf-8" src="js/cordova-2.5.0.js"></script>
+    <script type="text/javascript" charset="utf-8" src="js/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" charset="utf-8" src="js/jquery.mobile-1.3.0.min.js"></script>
+    <script type="text/javascript" charset="utf-8" src="js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="js/barcodescanner.js"></script>
+    <script type="text/javascript" src="js/SQLitePlugin.js"></script>
+    <script type="text/javascript" src="js/application.js"></script>
+    <script type="text/javascript" charset="utf-8">
+        //Wait for Cordova to load
+        document.addEventListener("deviceready", onDeviceReady, false);
+
+        // Cordova is ready
+        function onDeviceReady() {
+            navigator.splashscreen.hide();
+            var altura = $('body').height() - $('#header_inicio').height() - $('#footer_inicio').height();
+            $('#contenido,#barraIzquierda').css('height',altura+"px");
+        }
+
+        function scan() {
+            var datosArray;
+            window.plugins.barcodeScanner.scan(function(result) {
+                if(result.text != ""){
+                    datosArray = (result.text).split("|");
+                    displayData(datosArray);
+                    copyFile();
+                }
+
+            },function(error) {
+                alert("Scanning failed: " + error);
+            });
+        }
+
+        function initDB(datosArray){
+            var dbName = "ExpoQuimDatabase";
+            var version = '1.0';
+            var displayName = "ExpoQuim Database";
+            var maxSize = 655367; //Máximo tamaño en bytes
+            var db = window.sqlitePlugin.openDatabase(dbName, version, displayName, maxSize);
+            console.log()
+            db.transaction( function (tx){
+                tx.executeSql('DROP TABLE IF EXISTS contactos');
+                tx.executeSql('CREATE TABLE IF NOT EXISTS contactos (id integer primary key, nombre text, telefono integer, celular integer, correo text, ciudad text, estado text, aTrabajo1 text, aTrabajo2 text)');
+
+                tx.executeSql("INSERT INTO contactos (nombre, telefono, celular, correo, ciudad, estado, aTrabajo1, aTrabajo2) VALUES (?,?,?,?,?,?,?,?)",
+                    [datosArray[0], datosArray[1], datosArray[2], datosArray[3], datosArray[4], datosArray[5], datosArray[6], datosArray[7]]);
+            });
+        }
+
+        function success(entry) {
+            alert("New Path: " + entry.fullPath);
+        }
+        function resOnError(error) {
+            alert("Error: " + error.code);
+        }
+
+        function copyFile(){
+            window.resolveLocalFileSystemURI("file:///data/data/com.soleimx.ExpoQuimScanner/databases/ExpoQuimDatabase.db", resOnSuccess, resOnError);
+        }
+
+        function resOnSuccess(entry){
+            console.log("Entró al Success");
+            window.requestFileSystem(LocalFileSystem.PERSISTENT, 0,
+                function(fileSys) {
+                    fileSys.root.getDirectory("/mnt/usb_storage/ExpoQuimScanner", {create: true, exclusive: false},
+                        function(directory) {
+                            console.log("Copiando");
+                            entry.copyTo(directory, "copiaDB.db", success, resOnError);
+                        }, resOnError);
+                }, resOnError);
+        }
+
+    </script>
+
+</head>
+<body>
+
+<div id="inicio" data-role="page">
+	<div data-role="header" data-position="fixed" data-theme="a" id="header_inicio">
+        
+        <h1 style="margin:0;">ExpoContactos</h1>
+    </div>
+	
+    <div data-role="content" id="content">
+    	<div class="ui-grid">
+        	<div class="ui-block" id="barraIzquierda">
+            	<div class="well sombreadoInterno" style="margin:10px; padding:15px;">
+                    <img src="img/logo_app.png" class="responsive-image" alt="ExpoContactos Logo" title="ExpoContactos Logo" style="margin:0px auto; margin-top:5px; margin-bottom:5px; display:block;">
+                
+                	<ul data-role="listview" class="ui-listview-inset ui-corner-all ui-shadow" data-inset="true">
+                    	<li data-role="list-divider" style="text-align:center;">Men&uacute;</li>
+                        <li><a href="index.html" onclick="scan()"><img src="img/id-card.png" class="ui-li-icon">Escanear Gafete</a></li>
+                        <li><a href="index.html"><img src="img/consultas.png" class="ui-li-icon">Consultas</a></li>
+                        <li><a href="index.html"><img src="img/presentation.png" class="ui-li-icon">Exportar</a></li>
+                        <li><a href="index.html"><img src="img/question.png" class="ui-li-icon">FAQ</a></li>
+                        <li><a href="index.html"><img src="img/info.png" class="ui-li-icon">Acerca de ExpoContactos</a></li>
+                    </ul>
+                </div>
+            </div>
+			<div class="ui-block sombreadoInterno" id="contenido">&nbsp;</div>
+        </div>
+    </div>
+    <div data-role="footer" data-position="fixed" id="footer_inicio">
+    	<h4>Todos los Derechos Reservados &copy; 2013</h4>
+    </div>
+</div>
+<!--Fin Contenedor Principal-->
+
+</body>
+
+</html>

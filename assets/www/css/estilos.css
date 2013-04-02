@@ -1,0 +1,54 @@
+/* CSS Document */
+html, body {
+    height: 100%;
+}
+
+.ui-content{
+	padding:0;	
+}
+
+.ui-listview .ui-li-icon{
+	top: 0.5em;
+	max-height: 24px;
+    max-width: 24px;
+}
+
+.responsive-image { 
+	max-width:100%;
+	height:auto;
+}
+
+.sombreadoInterno{
+	-webkit-box-shadow: inset 0px 0px 10px 1px #666;
+    box-shadow: inset 0px 0px 10px 1px #666;
+}
+
+#barraIzquierda{
+	background:url(../img/7.png) repeat;
+	height:100%;
+	margin:0;
+	width:25%;
+	float:left;
+	border-right:1px dashed #FFF;
+}
+
+#contenido{
+	background:url(../img/linen.png) repeat;
+	margin:0;
+	width:74.9%;
+	float:left;
+	height:100%;
+}
+
+@media(max-width:800px){ 
+	#barraIzquierda{
+		width:100%;
+		*width:100%;	
+	}
+	
+	#contenido{
+		width:100%;
+		*width:100%;	
+	}​
+	
+}
